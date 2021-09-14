@@ -29,7 +29,6 @@ def test(args, model):
     print('torch devices = ', args.device)
     print('save_path = ', args.save_prefix)
 
-
     if not os.path.exists(args.save_prefix):        os.makedirs(args.save_prefix)
     print(args.save_prefix)
 
@@ -41,7 +40,7 @@ def test(args, model):
                                   batch_size=args.batchsize,
                                   shuffle=True,
                                   num_workers=args.num_worker,
-                                  drop_last=True)
+                                  drop_last=False)
 
     model = nn.DataParallel(model)
     model = model.to(args.device)
