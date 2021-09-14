@@ -19,14 +19,14 @@ from Net.Mbcnn import MBCNN
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--traindata_path', type=str,
-                    default= '/databse4/jhkim/DataSet/6MBCNNtestset/train', help='vit_patches_size, default is 16')
+                    default= '/databse4/jhkim/DataSet/2mura/mura_moire3_1_lumi135/train800/', help='vit_patches_size, default is 16')
 parser.add_argument('--testdata_path', type=str,
-                    default= '/databse4/jhkim/DataSet/2mura/tmpset', help='vit_patches_size, default is 16')
+                    default= '/databse4/jhkim/DataSet/2mura/mura_moire3_1_lumi135/test100', help='vit_patches_size, default is 16')
 parser.add_argument('--lr', type=float, default=1e-4,
                     help='learning rate')
 parser.add_argument('--num_worker', type=int, default=8,
                     help='number of workers')
-parser.add_argument('--batchsize', type=int,default= 4,
+parser.add_argument('--batchsize', type=int,default= 1,
                     help='mini batch size')
 parser.add_argument('--max_epoch', type=int, default=500,
                     help='number of max_epoch')
@@ -50,11 +50,11 @@ parser.add_argument('--pthfoler', type=str,default='pthfoler path was not config
                     help='pthfoler path, define it first!!')
 parser.add_argument('--device', type=str, default='cuda or cpu',
                     help='device, define it first!!')
-parser.add_argument('--save_prefix', type=str, default='/databse4/jhkim/PTHfolder/210913_UNET_variety_Demoire_for_IPhonemoire/',
+parser.add_argument('--save_prefix', type=str, default='/databse4/jhkim/PTHfolder/210914',
                     help='saving folder directory')
 parser.add_argument('--bestperformance', type=int, default=0,
                     help='saving folder directory')
-parser.add_argument('--pretrained_path', type=str, default='/databse4/jhkim/DataSet/2mura/tmpset/HRnet_UNet_mura_checkpoint_epoch500_0910_09_38_16.pth',
+parser.add_argument('--pretrained_path', type=str, default=None,#'/databse4/jhkim/DataSet/2mura/tmpset/HRnet_UNet_mura_checkpoint_epoch500_0910_09_38_16.pth',
                     help='saving folder directory')
 
 parser.add_argument('--trainmode', type=bool, default=True,
@@ -64,14 +64,14 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
     # net = VAE()
-    net = UNet(1,1)
+    # net = UNet(1,1)
 
     nFilters=64
     multi = True
     print('Before training')
-    # net = MBCNN(nFilters, multi)
+    net = MBCNN(nFilters, multi)
     print('After training')
-    # train(args, net)
-    test(args, net)
+    train(args, net)
+    # test(args, net)
 
 
