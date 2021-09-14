@@ -53,6 +53,7 @@ def train(args, model):
 
     model = nn.DataParallel(model)
     model = model.to(args.device)
+    model.train()
 
     L2_loss = L2_LOSS()
     criterion_mse = MSELoss()
@@ -98,7 +99,6 @@ def train(args, model):
             continue
 
         psnr_meter.reset()
-        model.train()
 
         for  ii, (moires, clears, labels) in tqdm(enumerate(train_dataloader)):
             moires = moires.to(args.device)
