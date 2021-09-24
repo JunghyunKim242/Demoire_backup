@@ -10,25 +10,58 @@ from torchvision import transforms
 from PIL import Image
 
 def default_loader(path):
-    img = Image.open(path).convert('RGB')
-    # img = Image.open(path).convert('L')
+    # img = Image.open(path).convert('RGB')
+    img = Image.open(path).convert('L')
     w, h = img.size
     # region = img.crop((1+int(0.15*w), 1+int(0.15*h), int(0.85*w), int(0.85*h)))
     return img
 
 class Moire_dataset(Dataset):
     def __init__(self, root,loader = default_loader):
-
-        moire_data_root = os.path.join(root, 'moire')
-        clear_data_root = os.path.join(root, 'clean')
+        moire_data_root = os.path.join(root, 'source')
+        clear_data_root = os.path.join(root, 'target')
 
         image_names = os.listdir(clear_data_root)
         image_names = ["_".join(i.split("_")[:-1]) for i in image_names]
 
-        self.moire_images = [os.path.join(moire_data_root, x + '_moire.png') for x in image_names]
-        self.clear_images = [os.path.join(clear_data_root, x + '_clean.png') for x in image_names]
-        # self.clear_images = [os.path.join(clear_data_root, x ) for x in image_names]
-        # self.moire_images = [os.path.join(clear_data_root, x ) for x in image_names]
+        self.moire_images = [os.path.join(moire_data_root, x + '_source.png') for x in image_names]
+        self.clear_images = [os.path.join(clear_data_root, x + '_target.png') for x in image_names]
+        self.transforms = transforms.Compose([
+            transforms.Resize((256, 256)),
+            transforms.ToTensor(),
+            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])
+        self.loader = loader
+        self.labels = image_names
+
+    def __getitem__(self, index):
+        moire_img_path = self.moire_images[index]
+        clear_img_path = self.clear_images[index]
+        moire = self.loader(moire_img_path)
+        clear = self.loader(clear_img_path)
+        moire = self.transforms(moire)
+        clear = self.transforms(clear)
+        label = self.labels[index]
+        return moire, clear, label
+
+    def __len__(self):
+        return len(self.moire_images)
+
+
+
+class AIMMoire_dataset(Dataset):
+    def __init__(self, root,loader = default_loader):
+        moire_data_root = os.path.join(root, 'source')
+        clear_data_root = os.path.join(root, 'target')
+
+        image_names1 = os.listdir(moire_data_root)
+        image_names1.sort()
+        self.moire_images = [os.path.join(moire_data_root, x ) for x in image_names1]
+
+        image_names2 = os.listdir(clear_data_root)
+        image_names2.sort()
+        self.clear_images = [os.path.join(clear_data_root, x ) for x in image_names2]
+        image_names2 = ["_".join(i.split("_")[:-1]) for i in image_names2]
 
         self.transforms = transforms.Compose([
             transforms.Resize((256, 256)),
@@ -37,25 +70,22 @@ class Moire_dataset(Dataset):
         ])
 
         self.loader = loader
-        self.labels = image_names
+        self.labels = image_names2
 
     def __getitem__(self, index):
-        label = self.labels[index]
-
         moire_img_path = self.moire_images[index]
         clear_img_path = self.clear_images[index]
-
         moire = self.loader(moire_img_path)
         clear = self.loader(clear_img_path)
-
         moire = self.transforms(moire)
         clear = self.transforms(clear)
-
+        label = self.labels[index]
         return moire, clear, label
-
 
     def __len__(self):
         return len(self.moire_images)
+
+
 
 def random_scale_for_pair(moire, clear, mask, is_val=False):
     if is_val == False:
