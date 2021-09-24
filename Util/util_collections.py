@@ -8,6 +8,8 @@ from tqdm import tqdm
 import cv2
 import matplotlib.pyplot as plt
 from torch.autograd import Variable
+import math
+
 
 # Converts a Tensor into an image array (numpy)
 # |imtype|: the desired type of the converted numpy array
@@ -29,10 +31,22 @@ def tensor2im(input_image, imtype=np.uint8):
     #simage_numpy = (image_numpy + 1.0) / 2.0
     return image_numpy
 
+def PSNR(original, contrast):
+    original = original*255.
+    contrast = contrast*255.
+    mse = np.mean((original - contrast) ** 2)
+    if mse == 0:
+        return 100
+    PIXEL_MAX = 255.0
+    PSNR = 20 * math.log10(PIXEL_MAX / math.sqrt(mse))
+    return PSNR
 
-def save_single_image(img, img_path):
+def save_single_image(img, img_path ):
     img = np.transpose(img, (1, 2, 0))
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    # img = cv2.resize(img, dsize=( 1170,2532 ), interpolation=cv2.INTER_NEAREST )
+
     img = img * 255
     cv2.imwrite(img_path, img)
     return img
