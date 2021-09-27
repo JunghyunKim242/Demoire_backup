@@ -16,16 +16,16 @@ from Net.Mbcnn import MBCNN
 ####
 parser = argparse.ArgumentParser()
 parser.add_argument('--traindata_path', type=str,
-                    default= '/databse4/jhkim/DataSet/2mura/mura_moire_3_1_variety_135_stripe/train/', help='vit_patches_size, default is 16')
+                    default= '/databse4/jhkim/DataSet/2mura/mura_moire_3_1_variety_135_curve/train2048/', help='vit_patches_size, default is 16')
 parser.add_argument('--testdata_path', type=str,
-                    default= '/databse4/jhkim/DataSet/2mura/mura_moire_3_1_variety_135_stripe/test/', help='vit_patches_size, default is 16')
+                    default= '/databse4/jhkim/DataSet/2mura/mura_moire_3_1_variety_135_curve/test128/', help='vit_patches_size, default is 16')
 parser.add_argument('--testmode_path', type=str,
-                    default= '/databse4/jhkim/DataSet/2mura/mura_moire_3_1_variety_135_curve/test_tmp/', help='vit_patches_size, default is 16')
+                    default= '/databse4/jhkim/DataSet/7.capturedmoireimage', help='vit_patches_size, default is 16')
 parser.add_argument('--lr', type=float, default=1e-4,
                     help='learning rate')
 parser.add_argument('--num_worker', type=int, default=8,
                     help='number of workers')
-parser.add_argument('--batchsize', type=int,default= 32,
+parser.add_argument('--batchsize', type=int,default= 16,
                     help='mini batch size')
 parser.add_argument('--max_epoch', type=int, default=500,
                     help='number of max_epoch')
@@ -49,11 +49,13 @@ parser.add_argument('--pthfolder', type=str,default='pthfoler path was not confi
                     help='pthfoler path, define it first!!')
 parser.add_argument('--device', type=str, default='cuda or cpu',
                     help='device, define it first!!')
-parser.add_argument('--save_prefix', type=str, default='/databse4/jhkim/PTHfolder/210924_U_Net_stripe/',
+parser.add_argument('--save_prefix', type=str, default='/databse4/jhkim/PTHfolder/210927_U_Net_curvemoire_/',
                     help='saving folder directory')
-parser.add_argument('--bestperformance', type=int, default=0,
+parser.add_argument('--bestperformance_saveevery', type=float, default=0.,
                     help='saving folder directory')
-parser.add_argument('--pretrained_path', type=str, default = None,
+parser.add_argument('--bestperformance', type=float, default=0.,
+                    help='saving folder directory')
+parser.add_argument('--pretrained_path', type=str, default = '/databse4/jhkim/DataSet/U_Net_Best_U_Net_ckpt_epoch030_psnr_61.8571_inputpsnr37.3690.pth',
                     help='saving folder directory')
 parser.add_argument('--trainmode', type=bool, default=True,
                     help='saving folder directory')
@@ -61,9 +63,9 @@ parser.add_argument('--trainmode', type=bool, default=True,
 args = parser.parse_args()
 if __name__ == "__main__":
     # nFilters=64     multi = True    net = MBCNN(nFilters, multi)
-    net = UNet(1,1)
+    net = UNet(1, 1)
 
-    train(args, net)
-    # test(args,net)
+    # train(args, net)
+    test(args, net)
 
 
