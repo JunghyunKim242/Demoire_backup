@@ -21,7 +21,7 @@ import colour
 import time
 
 def train(args, model):
-    os.environ["CUDA_VISIBLE_DEVICES"] = '0,1,2 3'
+    os.environ["CUDA_VISIBLE_DEVICES"] = '3,2'
     args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     if not os.path.exists(args.save_prefix):
@@ -66,8 +66,6 @@ def train(args, model):
                            weight_decay=0.01 #0.005
                            )
 
-    # scheduler = optim.lr_scheduler.LambdaLR(optimizer=optimizer,
-    #                                         lr_lambda=lambda epoch: 0.95 ** epoch)
 
     psnr_meter = meter.AverageValueMeter()
     Loss_meter = meter.AverageValueMeter()
@@ -82,8 +80,6 @@ def train(args, model):
         last_epoch = checkpoint["epoch"]
         optimizer_state = checkpoint["optimizer"]
         optimizer.load_state_dict(optimizer_state)
-        # scheduler_state = checkpoint["scheduler"]
-        # scheduler.load_state_dict(scheduler_state)
         list_psnr_output = checkpoint['list_psnr_output']
         list_loss_output = checkpoint['list_loss_output']
         list_psnr_input = checkpoint['list_psnr_input']
@@ -109,10 +105,9 @@ def train(args, model):
 
             loss = Loss_l2
             optimizer.zero_grad()
-            # loss.backward()
-            loss.backward(retain_graph = True) # retain_graph = True
+            loss.backward()
+            # loss.backward(retain_graph = True) # retain_graph = True
             optimizer.step()
-            # scheduler.step()
 
             moires = tensor2im(moires)
             outputs = tensor2im(outputs)
@@ -133,29 +128,19 @@ def train(args, model):
         list_psnr_input.append( round(psnr_input,4))
         list_loss_input.append( round(loss_input,4))
 
-        if (epoch + 1) % args.save_every == 0 or epoch == 0:  # 每5个epoch保存一次
-            # prefix = args.pthfoler + '{0}_ckpt_epoch{1}_'.format(args.name, epoch + 1)
-            # file_name = time.strftime(prefix + '%m%d_%H_%M_%S.pth')
-            # checkpoint = {  'epoch': epoch + 1,
-            #                 "optimizer": optimizer.state_dict(),
-            #                 "model": model.state_dict(),
-            #                 "lr": lr,
-            #                 # "scheduler" : scheduler,
-            #                 "list_psnr_output": list_psnr_output,
-            #                 "list_loss_output": list_loss_output,
-            #                 "list_psnr_input": list_psnr_input,
-            #                 "list_loss_input": list_loss_input,
-            #                 }
-            # torch.save(checkpoint, file_name)
+        if psnr_output > args.bestperformance:  # 每5个epoch保存一次
+            args.bestperformance = psnr_output
+            file_name = args.pthfoler + 'Best_preformance_{:}_statedict_epoch{:03d}_.pth'.format(args.name, epoch + 1)
+            torch.save(model.state_dict(), file_name)
 
-            if psnr_output > args.bestperformance:  # 每5个epoch保存一次
-                args.bestperformance = psnr_output
-                file_name = args.pthfoler + 'U_Net_Best_{}_ckpt_epoch{:03d}_psnr_{:0.4f}.pth'.format(args.name,epoch+1, round(psnr_output,4) )
+        if (epoch + 1) % args.save_every == 0 or epoch == 0:  # 每5个epoch保存一次
+            if psnr_output > args.bestperformance_saveevery:  # 每5个epoch保存一次
+                args.bestperformance_saveevery = psnr_output
+                file_name = args.pthfoler + 'Best_preformance_{}_ckpt_epoch{:03d}_psnr_{:0.4f}_inputpsnr{:0.4f}.pth'.format(args.name,epoch+1, round(psnr_output,4),round(psnr_input,4) )
                 checkpoint = {  'epoch': epoch + 1,
                                 "optimizer": optimizer.state_dict(),
                                 "model": model.state_dict(),
                                 "lr": lr,
-                                # "scheduler" : scheduler,
                                 "list_psnr_output": list_psnr_output,
                                 "list_loss_output": list_loss_output,
                                 "list_psnr_input": list_psnr_input,
@@ -179,38 +164,19 @@ def train(args, model):
                 plt.xlabel('Epochs')
                 plt.ylabel('PSNR')
                 plt.axis([1, epoch + 1, args.psnr_axis_min, args.psnr_axis_max])  # 10-50
-                plt.ylim(10,50)
                 plt.title('PSNR per epoch')
                 plt.grid(linestyle='--', color='lavender')
                 plt.legend(loc='lower right')
                 plt.savefig(args.save_prefix + 'PSNR_graph_{name}_{epoch}.png'.format(name=args.name,epoch = epoch+1))
                 plt.clf()
-        #
-        # if psnr_output > args.bestperformance :  # 每5个epoch保存一次
-        #     args.bestperformance = psnr_output
-        #     prefix = args.pthfoler + 'U_Net_Best_{0}_ckpt_epoch_psnr_{1}'.format(args.name, psnr_output)
-        #     file_name = time.strftime(prefix + '.pth')
-        #     checkpoint = {
-        #         'epoch': epoch + 1,
-        #         "optimizer": optimizer.state_dict(),
-        #         "model": model.state_dict(),
-        #         "lr": lr,
-        #         # "scheduler" : scheduler,
-        #         "list_psnr_output": list_psnr_output,
-        #         "list_loss_output": list_loss_output,
-        #         "list_psnr_input": list_psnr_input,
-        #         "list_loss_input": list_loss_input,
-        #     }
-        #     torch.save(checkpoint, file_name)
 
-
-        if epoch+1 in [50, 100, 200, 300]:#(loss_meter.value()[0] > previous_loss) or ((epoch + 1) % 10) == 0:
+        if epoch+1 in [50, 100, 200, 300]: #(loss_meter.value()[0] > previous_loss) or ((epoch + 1) % 10) == 0:
             lr = lr *(0.3)
             for param_group in optimizer.param_groups:
                 param_group['lr'] = lr
 
         if epoch == (args.max_epoch-1):
-            prefix2 = args.pthfoler + '{0}_stdc_epoch{1}.pth'.format(args.name, epoch + 1)
+            file_name2 = args.pthfoler + '{0}_stdc_epoch{1}.pth'.format(args.name, epoch + 1)
             torch.save(model.state_dict(), file_name2)
 
         print('1 epoch time: {:.2f} seconds \tremaining = {:.2f} minutes, \t {:.2f} hours'.format(
@@ -223,7 +189,7 @@ def train(args, model):
 
 # @torch.no_grad()
 with torch.no_grad():
-    def val(model, dataloader,epoch,args, vis=None, train_sample = False): # 맨처음 확인할때의 epoch == -1
+    def val(model, dataloader,epoch,args, train_sample = False): # 맨처음 확인할때의 epoch == -1
         model.eval()
 
         criterion_l2 = L2_LOSS()
@@ -292,6 +258,5 @@ with torch.no_grad():
                         img_path3 = "{0}/{1}_clean.png".format(         image_train_path_clean, label)
                         save_single_image(moire, img_path2)
                         save_single_image(clear, img_path3)
-
 
         return loss_output_meter.value()[0], psnr_output_meter.value()[0],loss_input_meter.value()[0],psnr_input_meter.value()[0]
