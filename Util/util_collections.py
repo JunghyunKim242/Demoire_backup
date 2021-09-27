@@ -31,7 +31,8 @@ def tensor2im(input_image, imtype=np.uint8):
     #simage_numpy = (image_numpy + 1.0) / 2.0
     return image_numpy
 
-def PSNR(original, contrast):
+
+def PSNR(original, contrast): # metrics.peak_signal_noise_ratio랑 동일
     original = original*255.
     contrast = contrast*255.
     mse = np.mean((original - contrast) ** 2)
@@ -41,12 +42,11 @@ def PSNR(original, contrast):
     PSNR = 20 * math.log10(PIXEL_MAX / math.sqrt(mse))
     return PSNR
 
+
 def save_single_image(img, img_path ):
     img = np.transpose(img, (1, 2, 0))
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-    # img = cv2.resize(img, dsize=( 1170,2532 ), interpolation=cv2.INTER_NEAREST )
-
+    img = cv2.resize(img, dsize=( 1170,2532 ), interpolation=cv2.INTER_NEAREST )
     img = img * 255
     cv2.imwrite(img_path, img)
     return img
@@ -115,6 +115,7 @@ def calc_pasnr_from_folder(src_path, dst_path):
     psnr /= num_image
     return psnr
 
+
 def ssim(img1, img2):
     C1 = (0.01 * 255)**2
     C2 = (0.03 * 255)**2
@@ -157,7 +158,6 @@ def calc_ssim(img1, img2):
             return ssim(np.squeeze(img1), np.squeeze(img2))
     else:
         raise ValueError('Wrong input image dimensions.')
-
 
 
 reconstruction_function = nn.MSELoss(size_average=False)
