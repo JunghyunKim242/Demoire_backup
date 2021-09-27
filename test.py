@@ -22,7 +22,7 @@ from skimage import metrics
 
 
 def test(args, model):
-    os.environ["CUDA_VISIBLE_DEVICES"] = '3,2'
+    os.environ["CUDA_VISIBLE_DEVICES"] = '0'
     args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     if not os.path.exists(args.save_prefix):
@@ -33,10 +33,10 @@ def test(args, model):
 
     Moiredata_test = AIMMoire_dataset(args.testmode_path)
     test_dataloader = DataLoader(Moiredata_test,
-                                  batch_size=args.batchsize,
-                                  shuffle=True,
-                                  num_workers=args.num_worker,
-                                  drop_last=False)
+                                 batch_size=args.batchsize,
+                                 shuffle=True,
+                                 num_workers=args.num_worker,
+                                 drop_last=False)
 
     model = nn.DataParallel(model)
     model = model.to(args.device)
@@ -45,9 +45,9 @@ def test(args, model):
     psnr_output_meter = meter.AverageValueMeter()
     psnr_input_meter = meter.AverageValueMeter()
 
-    image_train_path_moire = "{0}/{1}".format(args.save_prefix, "Moirefolder")
-    image_train_path_clean = "{0}/{1}".format(args.save_prefix, "Cleanfolder")
-    image_train_path_demoire = "{0}/{1}".format(args.save_prefix, "Demoirefolder")
+    image_train_path_moire = "{0}/{1}".format(args.save_prefix, "TEST_Moirefolder")
+    image_train_path_clean = "{0}/{1}".format(args.save_prefix, "TEST_Cleanfolder")
+    image_train_path_demoire = "{0}/{1}".format(args.save_prefix, "TEST_Demoirefolder")
 
     if not os.path.exists(image_train_path_moire):      os.makedirs(image_train_path_moire)
     if not os.path.exists(image_train_path_clean):      os.makedirs(image_train_path_clean)
@@ -57,8 +57,6 @@ def test(args, model):
         checkpoint = torch.load(args.pretrained_path)
         model.load_state_dict(checkpoint['model'])
         last_epoch = checkpoint["epoch"]
-        # optimizer_state = checkpoint["optimizer"]
-        # optimizer.load_state_dict(optimizer_state)
 
     for ii ,(moires,clears,labels) in tqdm(enumerate(test_dataloader)):
         moires = moires.to(args.device)
@@ -86,6 +84,6 @@ def test(args, model):
             img_path3 = "{0}/{1}_demoire_{2:.4f}.png".format(image_train_path_demoire, label, psnr_output)
             save_single_image(output, img_path3)
 
-    print('TESTdata PSNR = ',psnr_output_meter.value()[0])
+    print('Test datset_PSNR = ',psnr_output_meter.value()[0])
 
 
