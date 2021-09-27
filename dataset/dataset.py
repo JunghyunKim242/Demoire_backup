@@ -61,7 +61,7 @@ class AIMMoire_dataset(Dataset):
         image_names2 = os.listdir(clear_data_root)
         image_names2.sort()
         self.clear_images = [os.path.join(clear_data_root, x ) for x in image_names2]
-        image_names2 = ["_".join(i.split("_")[:-1]) for i in image_names2]
+        image_names1 = ["_".join(i.split("_")[:-1]) for i in image_names1]
 
         self.transforms = transforms.Compose([
             transforms.Resize((256, 256)),
@@ -70,7 +70,7 @@ class AIMMoire_dataset(Dataset):
         ])
 
         self.loader = loader
-        self.labels = image_names2
+        self.labels = image_names1
 
     def __getitem__(self, index):
         moire_img_path = self.moire_images[index]
