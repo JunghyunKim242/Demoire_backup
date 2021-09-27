@@ -10,7 +10,6 @@ class DoubleConv(nn.Module):
         super().__init__()
         if not mid_channels:
             mid_channels = out_channels
-            print('conv2D!@#$')
         self.double_conv = nn.Sequential(
             nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(mid_channels),
